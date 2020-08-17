@@ -1,0 +1,20 @@
+/etc/runner.json
+
+
+## git
+
+*.orig
+
+
+## python
+
+/.virtualenv/
+/python_modules
+/requirements.txt
+*.pyc
+
+
+## vim
+
+*.swo
+*.swp
