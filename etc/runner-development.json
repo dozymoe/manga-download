@@ -9,5 +9,15 @@
     ],
     "python_version": "3.8",
     "default_project": "crawler",
-    "default_variant": "development"
+    "default_variant": "development",
+
+    "configuration": {
+        "development": {
+            "crawler": {
+                "shell_env": {
+                    "MANGA_BASEDIR": "/mnt/disk1/MangaLibrary"
+                }
+            }
+        }
+    }
 }

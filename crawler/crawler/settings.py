@@ -7,6 +7,7 @@
 #     https://docs.scrapy.org/en/latest/topics/downloader-middleware.html
 #     https://docs.scrapy.org/en/latest/topics/spider-middleware.html
 
+import os
 from shutil import which
 
 BOT_NAME = 'crawler'
@@ -16,13 +17,14 @@ NEWSPIDER_MODULE = 'crawler.spiders'
 
 
 # Crawl responsibly by identifying yourself (and your website) on the user-agent
-#USER_AGENT = 'crawler (+http://www.yourdomain.com)'
+USER_AGENT = '(Privoxy/1.0)'
 
 # Obey robots.txt rules
 ROBOTSTXT_OBEY = True
 
 # Configure maximum concurrent requests performed by Scrapy (default: 16)
-#CONCURRENT_REQUESTS = 32
+CONCURRENT_REQUESTS = 2
+RETRY_TIMES = 9999
 
 # Configure a delay for requests for the same website (default: 0)
 # See https://docs.scrapy.org/en/latest/topics/settings.html#download-delay
@@ -53,7 +55,6 @@ ROBOTSTXT_OBEY = True
 # Enable or disable downloader middlewares
 # See https://docs.scrapy.org/en/latest/topics/downloader-middleware.html
 DOWNLOADER_MIDDLEWARES = {
-#    'crawler.middlewares.CrawlerDownloaderMiddleware': 543,
 #     'scrapy_selenium.SeleniumMiddleware': 800,
 }
 
@@ -65,9 +66,10 @@ DOWNLOADER_MIDDLEWARES = {
 
 # Configure item pipelines
 # See https://docs.scrapy.org/en/latest/topics/item-pipeline.html
-#ITEM_PIPELINES = {
-#    'crawler.pipelines.CrawlerPipeline': 300,
-#}
+ITEM_PIPELINES = {
+    'crawler.pipelines.ComicSeriePipeline': 300,
+    'crawler.pipelines.ComicChapterPipeline': 301,
+}
 
 # Enable and configure the AutoThrottle extension (disabled by default)
 # See https://docs.scrapy.org/en/latest/topics/autothrottle.html
@@ -84,11 +86,12 @@ DOWNLOADER_MIDDLEWARES = {
 
 # Enable and configure HTTP caching (disabled by default)
 # See https://docs.scrapy.org/en/latest/topics/downloader-middleware.html#httpcache-middleware-settings
-#HTTPCACHE_ENABLED = True
-#HTTPCACHE_EXPIRATION_SECS = 0
-#HTTPCACHE_DIR = 'httpcache'
+HTTPCACHE_ENABLED = True
+HTTPCACHE_EXPIRATION_SECS = 7 * 24 * 60 * 60
+HTTPCACHE_DIR = os.path.join(os.environ['ROOT_DIR'], 'tmp/httpcache')
 #HTTPCACHE_IGNORE_HTTP_CODES = []
 #HTTPCACHE_STORAGE = 'scrapy.extensions.httpcache.FilesystemCacheStorage'
+HTTPCACHE_GZIP = True
 
 SELENIUM_DRIVER_NAME = 'chrome'
 SELENIUM_DRIVER_EXECUTABLE_PATH = which('chromedriver')
