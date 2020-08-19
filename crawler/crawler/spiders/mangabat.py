@@ -20,7 +20,7 @@ class MangabatSpider(scrapy.Spider):
         'https://read.mangabat.com/read-ka14123', # Gantz:g
         'https://read.mangabat.com/read-za31375', # Gantz Origins: Oku Hiroya And Sf Movie Stories
         'https://read.mangabat.com/read-ui14779', # Berserk
-        ##'https://read.mangabat.com/read-wn15010', # Nana To Kaoru
+        #'https://read.mangabat.com/read-wn15010', # Nana To Kaoru
         'https://m.mangabat.com/read-cy380991', # Nana To Kaoru Arashi
         'https://m.mangabat.com/read-iz387166', # Nana To Kaoru Kokosei No Sm Gokko
         'https://read.mangabat.com/read-el14060', # Onepunch-Man
@@ -29,6 +29,7 @@ class MangabatSpider(scrapy.Spider):
         'https://read.mangabat.com/read-lo43185', # Goblin Slayer Gaiden 2: Tsubanari No Daikatana
         'https://read.mangabat.com/read-ip39886', # Goblin Slayer: Side Story Year One
         'https://m.mangabat.com/read-hm385405', # Goblin Slayer: Brand New Day
+        'https://read.mangabat.com/read-yq13739', # Kingdom
     ]
     VOLUME_PATTERN = re.compile(r'(Vol.|Volume )(?P<num>\d+)')
     CHAPTER_PATTERN = re.compile(r'Chapter (?P<num>\d+)(\.(?P<extra>\d+))?')

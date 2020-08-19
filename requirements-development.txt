@@ -1,3 +1,10 @@
+aiohttp
+aiomultiprocess
 brotlipy
+eyed3
+marshmallow
+piexif
+Pillow
+pycurl
 scrapy
 scrapy-selenium

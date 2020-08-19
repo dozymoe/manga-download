@@ -2,6 +2,8 @@
     "modules": [
         "lib.fireh_runner.modules.setup",
         "lib.fireh_runner.modules.python",
+        "lib.fireh_runner.modules.virtualenv",
+        "lib.fireh_runner.modules.project",
         "lib.fireh_runner.modules.scrapy"
     ],
     "setup_modules": [
@@ -15,7 +17,15 @@
         "development": {
             "crawler": {
                 "shell_env": {
-                    "MANGA_BASEDIR": "/mnt/disk1/MangaLibrary"
+                    "MANGA_BASEDIR": "/mnt/disk1/MangaLibrary",
+                    "DOWNLOAD_HOST": "127.0.0.2",
+                    "DOWNLOAD_PORT": "10001"
+                }
+            },
+            "download_manager": {
+                "shell_env": {
+                    "LISTEN_ADDR": "127.0.0.2",
+                    "LISTEN_PORT": "10001"
                 }
             }
         }
