@@ -16,20 +16,20 @@ class MangabatSpider(scrapy.Spider):
     ]
     start_urls = [
         'https://read.mangabat.com/read-tk25033', # Gantz
-        'https://m.mangabat.com/read-mt390512', # Gantz:e
-        'https://read.mangabat.com/read-ka14123', # Gantz:g
-        'https://read.mangabat.com/read-za31375', # Gantz Origins: Oku Hiroya And Sf Movie Stories
-        'https://read.mangabat.com/read-ui14779', # Berserk
-        #'https://read.mangabat.com/read-wn15010', # Nana To Kaoru
-        'https://m.mangabat.com/read-cy380991', # Nana To Kaoru Arashi
-        'https://m.mangabat.com/read-iz387166', # Nana To Kaoru Kokosei No Sm Gokko
-        'https://read.mangabat.com/read-el14060', # Onepunch-Man
-        'https://read.mangabat.com/read-np14412', # Overlord
-        'https://m.mangabat.com/read-zx377716', # Goblin Slayer
-        'https://read.mangabat.com/read-lo43185', # Goblin Slayer Gaiden 2: Tsubanari No Daikatana
-        'https://read.mangabat.com/read-ip39886', # Goblin Slayer: Side Story Year One
-        'https://m.mangabat.com/read-hm385405', # Goblin Slayer: Brand New Day
-        'https://read.mangabat.com/read-yq13739', # Kingdom
+        #'https://m.mangabat.com/read-mt390512', # Gantz:e
+        #'https://read.mangabat.com/read-ka14123', # Gantz:g
+        #'https://read.mangabat.com/read-za31375', # Gantz Origins: Oku Hiroya And Sf Movie Stories
+        #'https://read.mangabat.com/read-ui14779', # Berserk
+        ##'https://read.mangabat.com/read-wn15010', # Nana To Kaoru
+        #'https://m.mangabat.com/read-cy380991', # Nana To Kaoru Arashi
+        #'https://m.mangabat.com/read-iz387166', # Nana To Kaoru Kokosei No Sm Gokko
+        #'https://read.mangabat.com/read-el14060', # Onepunch-Man
+        #'https://read.mangabat.com/read-np14412', # Overlord
+        #'https://m.mangabat.com/read-zx377716', # Goblin Slayer
+        #'https://read.mangabat.com/read-lo43185', # Goblin Slayer Gaiden 2: Tsubanari No Daikatana
+        #'https://read.mangabat.com/read-ip39886', # Goblin Slayer: Side Story Year One
+        #'https://m.mangabat.com/read-hm385405', # Goblin Slayer: Brand New Day
+        #'https://read.mangabat.com/read-yq13739', # Kingdom
     ]
     VOLUME_PATTERN = re.compile(r'(Vol.|Volume )(?P<num>\d+)')
     CHAPTER_PATTERN = re.compile(r'Chapter (?P<num>\d+)(\.(?P<extra>\d+))?')
@@ -68,6 +68,7 @@ class MangabatSpider(scrapy.Spider):
             url = response.urljoin(anchor.attrib['href'])
             yield scrapy.Request(url=url, callback=self.parse_chapter,
                     cb_kwargs=kwargs)
+            break
 
 
     def parse_chapter(self, response, **kwargs):
@@ -80,3 +81,4 @@ class MangabatSpider(scrapy.Spider):
             for key, value in kwargs.items():
                 item[key] = value
             yield item
+            break

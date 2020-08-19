@@ -1,4 +1,5 @@
 /etc/runner.json
+/download_manager/generated/
 /tmp/
 /var/
 

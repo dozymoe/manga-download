@@ -14,3 +14,9 @@ class DownloadUrlCreateRequest(Schema):
 
 class DownloadUrlDestroyRequest(Schema):
     id = fields.Int(description="Download Id", required=True)
+
+
+class DownloadUrlUpdateRequest(Schema):
+    id = fields.Int(description="Download Id", required=True)
+    retries = fields.Int(description="Retry times", required=True)
+    downloaded_at = fields.Str(description="Last Downloaded At", required=True)

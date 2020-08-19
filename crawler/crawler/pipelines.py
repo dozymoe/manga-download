@@ -8,8 +8,7 @@ import logging
 import json
 import os
 import re
-from shutil import which
-import subprocess
+import requests
 # useful for handling different item types with a single interface
 from itemadapter import ItemAdapter
 from .items import ComicSerie, ChapterUrl
@@ -50,21 +49,24 @@ class ComicChapterPipeline:
                 _logger.info(dict(item))
                 raise Exception("Cannot guess image filename.")
 
-            subprocess.check_call([
-                    self.bin,
-                    '--quiet',
-                    '--category-index=0',
-                    '--folder=%s' % basedir,
-                    '--filename=%s' % filename,
-                    '--http-referer=%s' % item['referer'],
-                    '--http-user-agent=%s' % self.user_agent,
-                    item['url']])
+            url = 'http://%s:%s/download-url/add' % (
+                    os.environ['DOWNLOAD_HOST'], os.environ['DOWNLOAD_PORT'])
+
+            data = {
+                'url': item['url'],
+                'path': os.path.join(basedir, filename),
+                'http_user_agent': self.user_agent,
+                'http_referer': item['referer'],
+                'meta': json.dumps({key: item[key] for key in ['serie', 'volume',
+                    'chapter', 'chapter_extra', 'title'] if key in item}),
+            }
+            requests.post(url, data=data)
+
         return item
 
 
     def __init__(self, user_agent):
         self.user_agent = user_agent
-        self.bin = which('uget-gtk')
 
 
     @classmethod

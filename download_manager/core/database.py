@@ -24,6 +24,7 @@ CREATE TABLE IF NOT EXISTS download_url (
 async def open_sqlite(app):
     conf = app['config']
     db = await aiosqlite.connect(conf['database_name'])
+    db.row_factory = aiosqlite.Row
     await initialize_database(db)
     app['db'] = db
 

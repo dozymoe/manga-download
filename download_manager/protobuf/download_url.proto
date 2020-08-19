@@ -1,0 +1,9 @@
+syntax = "proto3";
+
+message ComicChapterMeta {
+    string serie = 1;
+    int32 volume = 2;
+    int32 chapter = 3;
+    int32 chapter_extra = 4;
+    string title = 6;
+}
