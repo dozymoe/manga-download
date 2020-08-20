@@ -13,7 +13,6 @@ _logger = logging.getLogger(__name__)
 
 @request_schema(DownloadUrlCreateRequest)
 async def download_url_create(request):
-    _logger.info('download_url_create')
     submission = request['data']
     db = request.app['db']
     await db.execute('''
@@ -27,24 +26,23 @@ INSERT INTO download_url(url, path, http_user_agent, http_referer,
             submission.get('auth_username'), submission.get('auth_password'),
             submission.get('cookie_jar'), submission.get('meta'),
             datetime.now(), 0))
-
+    await db.commit()
     return web.Response()
 
 
 @request_schema(DownloadUrlDestroyRequest)
 async def download_url_destroy(request):
-    _logger.info('download_url_destroy')
     submission = request['data']
     id = submission['id']
 
     db = request.app['db']
     await db.execute('DELETE FROM download_url WHERE id=?', (id,))
+    await db.commit()
     return web.Response()
 
 
 @request_schema(DownloadUrlUpdateRequest)
 async def download_url_edit(request):
-    _logger.info('download_url_edit')
     submission = request['data']
     id = submission['id']
 
@@ -52,20 +50,27 @@ async def download_url_edit(request):
     await db.execute('''
 UPDATE download_url
     SET retries=?, downloaded_at=?
-    WHERE id=?'
+    WHERE id=?
 '''        ,
            (submission['retries'], submission['downloaded_at'], id))
+    await db.commit()
     return web.Response()
 
 
 async def download_url_index(request):
-    _logger.info('download_url_index')
     db = request.app['db']
     cursor = await db.execute('''
 SELECT * FROM download_url
     ORDER BY retries ASC , created_at ASC
     LIMIT 100
 ''')
-    rows = [dict(x) for x in await cursor.fetchall()]
-    _logger.info(rows)
+    paths = set()
+    rows = []
+    for record in await cursor.fetchall():
+        row = dict(record)
+        # Filter unique values
+        if row['path'] in paths:
+            continue
+        paths.add(row['path'])
+        rows.append(row)
     return web.json_response(rows)

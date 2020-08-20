@@ -9,7 +9,7 @@ from .download_url.views import download_url_create, download_url_destroy
 from .download_url.views import download_url_index, download_url_edit
 from .download_worker import start_workers, stop_workers, clean_workers
 
-logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(level=logging.INFO)
 
 protobuf_dir = os.path.join(os.path.dirname(__file__), 'protobuf')
 generated_dir = os.path.join(os.path.dirname(__file__), 'generated')

@@ -15,7 +15,7 @@ class MangabatSpider(scrapy.Spider):
         'read.mangabat.com',
     ]
     start_urls = [
-        'https://read.mangabat.com/read-tk25033', # Gantz
+        #'https://read.mangabat.com/read-tk25033', # Gantz
         #'https://m.mangabat.com/read-mt390512', # Gantz:e
         #'https://read.mangabat.com/read-ka14123', # Gantz:g
         #'https://read.mangabat.com/read-za31375', # Gantz Origins: Oku Hiroya And Sf Movie Stories
@@ -68,7 +68,6 @@ class MangabatSpider(scrapy.Spider):
             url = response.urljoin(anchor.attrib['href'])
             yield scrapy.Request(url=url, callback=self.parse_chapter,
                     cb_kwargs=kwargs)
-            break
 
 
     def parse_chapter(self, response, **kwargs):
@@ -81,4 +80,3 @@ class MangabatSpider(scrapy.Spider):
             for key, value in kwargs.items():
                 item[key] = value
             yield item
-            break

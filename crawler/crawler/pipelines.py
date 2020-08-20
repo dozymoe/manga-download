@@ -46,7 +46,7 @@ class ComicChapterPipeline:
             if match:
                 filename = '%s.%s' % (match.group('num'), match.group('ext'))
             else:
-                _logger.info(dict(item))
+                _logger.error(dict(item))
                 raise Exception("Cannot guess image filename.")
 
             url = 'http://%s:%s/download-url/add' % (
@@ -60,7 +60,9 @@ class ComicChapterPipeline:
                 'meta': json.dumps({key: item[key] for key in ['serie', 'volume',
                     'chapter', 'chapter_extra', 'title'] if key in item}),
             }
-            requests.post(url, data=data)
+            # disable proxy
+            proxies = {'http': None, 'https': None}
+            requests.post(url, data=data, proxies=proxies)
 
         return item
 

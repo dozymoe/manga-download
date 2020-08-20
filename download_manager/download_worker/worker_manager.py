@@ -2,19 +2,26 @@ from aiohttp import request
 from aiomultiprocess import Pool
 import asyncio
 from datetime import datetime
-#from email.parser import BytesParser
+from email.parser import BytesParser
 import json
 import logging
 import os
 import pathlib
-from PIL import Image
+from PIL import Image, ImageFile
 import piexif
 
-_logger = logging.getLogger(__name__)
+ImageFile.LOAD_TRUNCATED_IMAGES = True
+
+_logger = None
+
+
+def worker_init():
+    global _logger
+    logging.basicConfig(level=logging.DEBUG)
+    _logger = logging.getLogger(__name__)
 
 
 async def worker_main(record):
-    _logger.info('worker_main:curl')
     binargs = [
         'curl',
         '--dump-header', '-',
@@ -22,11 +29,10 @@ async def worker_main(record):
         '--continue-at', '-',
         '--create-dirs',
         '--fail',
-        '--parallel',
         # This will be rewritten anyway when we updates EXIF
         #'--remote-time',
-        '--connect-timeout', '30',
-        '--retry-delay', '0',
+        '--connect-timeout', '60',
+        '--retry-delay', '10',
         '--retry', '99',
         '--output', record['path'],
     ]
@@ -54,6 +60,8 @@ async def worker_main(record):
 
     # e-tag
     etag_path = pathlib.Path(record['path']).with_suffix('.etag')
+    etag_path = os.path.join(os.path.dirname(etag_path),
+            '.%s' % os.path.basename(etag_path))
     if os.path.exists(etag_path):
         binargs.append('--etag-compare')
         binargs.append(etag_path)
@@ -66,18 +74,16 @@ async def worker_main(record):
             stdout=asyncio.subprocess.PIPE)
 
     stdout, stderr = await proc.communicate()
-    ## read response headers
-    #status, stdout = stdout.split(b'\r\n', 1)
-    #headers = BytesParser().parsebytes(stdout)
+    if proc.returncode == 0:
+        # read response headers
+        status, stdout = stdout.split(b'\r\n', 1)
+        headers = BytesParser().parsebytes(stdout)
+        return record, status.strip(), headers
+    return record, None, None
 
-    result = proc.returncode == 0
-    _logger.info('worker_main:result:%s' % result)
-    return record, result
 
-
-async def worker_result(record, result):
-    _logger.info('worker_result')
-    if not result:
+async def worker_result(record, status, headers):
+    if not status:
         # Update download queue and exit
         url = 'http://%s:%s/download-url/edit' % (os.environ['LISTEN_ADDR'],
                 os.environ['LISTEN_PORT'])
@@ -90,13 +96,6 @@ async def worker_result(record, result):
         async with request('POST', url, data=data) as response:
             pass
         return
-
-    _logger.info('worker_result:POST delete')
-    # Delete download queue
-    url = 'http://%s:%s/download-url/delete' % (os.environ['LISTEN_ADDR'],
-            os.environ['LISTEN_PORT'])
-    async with request('POST', url, data={'id': record['id']}) as response:
-        pass
 
     # Generate bytes representation of Comic metadata
     from ..generated import ComicChapterMeta
@@ -111,19 +110,32 @@ async def worker_result(record, result):
             continue
         setattr(comic, field, int(meta[field]))
 
-
     # Store Comic metadata as EXIF
     img = Image.open(record['path'])
-    exif_dict = piexif.load(img.info['exif'])
+    if img.mode != 'RGB':
+        img = img.convert('RGB')
+    try:
+        exif_dict = piexif.load(img.info['exif'])
+    except KeyError:
+        exif_dict = {}
     if not 'Exif' in exif_dict:
         exif_dict['Exif'] = {}
     exif_dict['Exif'][piexif.ExifIFD.UserComment] = comic.SerializeToString()
-    img.save(pathlib.Path(record['path']).with_suffix('.jpg'), 'jpeg',
+    img.save(pathlib.Path(record['path']).with_suffix('.jpg'), format='JPEG',
             exif=piexif.dump(exif_dict))
+
+    _logger.info(record['path'])
+    # Delete download queue
+    url = 'http://%s:%s/download-url/delete' % (os.environ['LISTEN_ADDR'],
+            os.environ['LISTEN_PORT'])
+    async with request('POST', url, data={'id': record['id']}) as response:
+        pass
 
 
 async def worker_execute():
-    _logger.info('worker_execute')
+    global _logger
+    _logger = logging.getLogger(__name__)
+
     try:
         url = 'http://%s:%s/download-url/index' % (os.environ['LISTEN_ADDR'],
                 os.environ['LISTEN_PORT'])
@@ -133,11 +145,11 @@ async def worker_execute():
                 records = await response.json()
 
             if records:
-                async with Pool(3) as pool:
-                    async for record, result in pool.map(worker_main, records):
-                        await worker_result(record, result)
+                async with Pool(4, worker_init) as pool:
+                    async for record, status, headers in\
+                            pool.map(worker_main, records):
+                        await worker_result(record, status, headers)
 
-            await asyncio.sleep(10)
+            await asyncio.sleep(20)
     except asyncio.CancelledError:
-        _logger.info('worker_execute:cancel')
         pass
